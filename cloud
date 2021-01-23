@@ -15,8 +15,10 @@ VERSION = '20210123'
 print()
 print(f'{sys.argv[0]} - version {VERSION}')
 
+config_file = pathlib.Path(sys.path[0]) / 'cloud.conf'
+
 config = configparser.ConfigParser()
-config.read('cloud.conf')
+config.read(config_file)
 primary_parent_dir = config['primary']['local_parent_dir']
 primary_data_dir   = config['primary']['local_data_dir']
 primary_log_dir    = config['primary']['local_log_dir']
