@@ -9,7 +9,6 @@ import sys
 import datetime
 import glob
 import configparser
-#import pathlib
 from pathlib import Path
 
 VERSION = '20210123'
