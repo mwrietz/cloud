@@ -11,7 +11,7 @@ import glob
 import configparser
 from pathlib import Path
 
-VERSION = '20210123'
+VERSION = '20210124'
 print()
 print(f'{sys.argv[0]} - version {VERSION}')
 
@@ -27,6 +27,7 @@ CLOUDDATAPATH = Path.home() / primary_data_dir
 LOGFILEPATH   = Path.home() / primary_log_dir 
 LOGFILE = LOGFILEPATH / 'sync_log.txt'
 
+CLOUDDATAPATH.mkdir(parents=True, exist_ok=True)
 LOGFILEPATH.mkdir(parents=True, exist_ok=True)
 
 def main():
