@@ -9,6 +9,11 @@ My primary motivation --- there is currently not a good syncing solution provide
 Dependencies:
 * rclone
 
+Example Usage:
+* cloud status  - display current status of local folder relative to cloud folder
+* cloud pull    - sync local folder with cloud folder
+* cloud push    - sync cloud folder with local folder
+
 Todo:
 * move configuration file to ./config/cloud/
 * move log file to ./config/cloud/
