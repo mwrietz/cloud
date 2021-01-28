@@ -2,7 +2,7 @@
 
 This script syncs files between local folders and cloud drive folders.
 
-My primary motivation --- my cloud services do not provide a good syncing solution for linux and my preferred computing platform (raspberry pi).
+Primary motivation --- my cloud services do not provide a good syncing solution for linux and my preferred computing platform (raspberry pi).
 
 ## Dependencies
 * rclone
