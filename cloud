@@ -22,7 +22,7 @@ def main():
     print()
     print(f'{sys.argv[0]} - version 20210129')
 
-    config_file = Path(sys.path[0]) / 'cloud.conf'
+    config_file = Path.home() / '.config/cloud/cloud.conf'
     check_file_exists(config_file)
     
     config = configparser.ConfigParser()
