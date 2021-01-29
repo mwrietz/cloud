@@ -13,5 +13,4 @@ Primary motivation --- my cloud services do not provide a good syncing solution 
 * cloud push    - sync cloud folder with local folder
 
 ## Todo
-* move configuration file to ./config/cloud/
-* move log file to ./config/cloud/
+* 
