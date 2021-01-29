@@ -11,26 +11,34 @@ import glob
 import configparser
 from pathlib import Path
 
-VERSION = '20210125'
-print()
-print(f'{sys.argv[0]} - version {VERSION}')
-
-config_file = Path(sys.path[0]) / 'cloud.conf'
-
-config = configparser.ConfigParser()
-config.read(config_file)
-primary_parent_dir = config['primary']['local_parent_dir']
-primary_data_dir   = config['primary']['local_data_dir']
-primary_log_dir    = config['primary']['local_log_dir']
-
-CLOUDDATAPATH = Path.home() / primary_data_dir 
-LOGFILEPATH   = Path.home() / primary_log_dir 
-LOGFILE = LOGFILEPATH / 'sync_log.txt'
-
-CLOUDDATAPATH.mkdir(parents=True, exist_ok=True)
-LOGFILEPATH.mkdir(parents=True, exist_ok=True)
+#CLOUDDATAPATH.mkdir(parents=True, exist_ok=True)
+#LOGFILEPATH.mkdir(parents=True, exist_ok=True)
 
 def main():
+    global CLOUDDATAPATH
+    global LOGFILEPATH
+    global LOGFILE
+
+    print()
+    print(f'{sys.argv[0]} - version 20210129')
+
+    config_file = Path(sys.path[0]) / 'cloud.conf'
+    check_file_exists(config_file)
+    
+    config = configparser.ConfigParser()
+    config.read(config_file)
+    primary_data_dir   = config['primary']['local_data_dir']
+    primary_log_dir    = config['primary']['local_log_dir']
+    
+    CLOUDDATAPATH = Path.home() / primary_data_dir 
+    check_path_exists(CLOUDDATAPATH)
+    
+    LOGFILEPATH   = Path.home() / primary_log_dir 
+    check_path_exists(LOGFILEPATH)
+    
+    LOGFILE = LOGFILEPATH / 'sync_log.txt'
+    check_file_exists(LOGFILE)
+
     accounts = []
     config_sections = config.sections()
     for i in range(1, len(config_sections)):
@@ -134,6 +142,16 @@ def formatted_time(epoch_time):
 def header(label):
     print()
     print(f'-- {label} --')
+
+def check_path_exists(fullpath):
+    if not fullpath.is_dir():
+        print (f'{fullpath} doesn\'t exist')
+        sys.exit()
+
+def check_file_exists(filepath):
+    if not filepath.is_file():
+        print (f'{filepath} doesn\'t exist')
+        sys.exit()
 
 def usage():
     print()
