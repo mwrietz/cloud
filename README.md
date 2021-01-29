@@ -15,4 +15,3 @@ Primary motivation --- my cloud services do not provide a good syncing solution 
 ## Todo
 * move configuration file to ./config/cloud/
 * move log file to ./config/cloud/
-* change local data root folder to ./Cloud/
