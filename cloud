@@ -27,6 +27,7 @@ def main():
     
     config = configparser.ConfigParser()
     config.read(config_file)
+
     primary_data_dir   = config['primary']['local_data_dir']
     primary_log_dir    = config['primary']['local_log_dir']
     
@@ -41,11 +42,13 @@ def main():
 
     accounts = []
     config_sections = config.sections()
+
     for i in range(1, len(config_sections)):
         label = config_sections[i]
         local_data_dir = config[label]['local_data_dir']
         remote_data_dir = config[label]['remote_data_dir']
         accounts.append([label, str(CLOUDDATAPATH / local_data_dir), remote_data_dir])
+
     if len(sys.argv) == 2:
         action = sys.argv[1]
         if action == 'push' or action == 'pull':
