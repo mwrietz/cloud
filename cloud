@@ -20,7 +20,7 @@ def main():
     global LOGFILE
 
     print()
-    print(f'{sys.argv[0]} - version 20210129')
+    print(f'{sys.argv[0]} - version 20210130')
 
     config_file = Path.home() / '.config/cloud/cloud.conf'
     check_file_exists(config_file)
@@ -53,6 +53,7 @@ def main():
         action = sys.argv[1]
         if action == 'push' or action == 'pull':
             perform(action, accounts)
+            status()
         if action == 'status':
             status()
     else:
@@ -67,17 +68,22 @@ def perform(action, accounts):
             cmd = f'rclone sync {accounts[i][local]} {accounts[i][remote]} --progress'
         if action == 'pull':
             cmd = f'rclone sync {accounts[i][remote]} {accounts[i][local]} --progress'
+        print(cmd)
         os.system(cmd)
     date = datetime.datetime.now()
     update_log_file(action, date)
 
 def status():
-    header('cloud sync status')
-    os.system(f'rclone sync box:sync_log {LOGFILEPATH}')
+    header('sync log')
+    cmd = f'rclone sync box:sync_log {LOGFILEPATH}'
+    print(cmd)
+    os.system(cmd)
     tail_log_file()
     header('local file status')
-    print('last push                                       newest local file')
-    print(f'{last_push_time():45} : {newest_file_time()}')
+    #print('last push                                       newest local file')
+    #print(f'{last_push_time():45} : {newest_file_time()}')
+    print(f'last push   : {last_push_time()}')
+    print(f'newest file : {newest_file_time()}')
     if newest_file_time() > last_push_time():
         print()
         print('push needed...')
@@ -95,18 +101,20 @@ def update_log_file(action, date):
         logstring = f'{actionstring:45} : {newestfilestring}\n'
         logf.write(logstring)
     os.system(f'rclone sync {LOGFILEPATH} box:sync_log')
-    header('cloud sync status')
-    tail_log_file()
+    #header('cloud sync status')
+    #tail_log_file()
 
 def tail_log_file():
-    print(f'tail {LOGFILE}:')
-    print()
-    print('last action                                     newest local file @ last action')
+    #print(f'tail {LOGFILE}:')
+    #print('last action                                     newest local file @ last action')
     with open(LOGFILE) as logf:
         content = logf.read().splitlines()
     count = len(content)
-    for i in range(count-5, count):
-        print(content[i])
+    #for i in range(count-2, count):
+    #    print(content[i])
+    header('remote file status')
+    print(f'last action : {content[count-1][:45]}')
+    print(f'newest file : {content[count-1][48:]}')
 
 def last_push_time():
     lastpushtime=''
@@ -144,7 +152,10 @@ def formatted_time(epoch_time):
 
 def header(label):
     print()
-    print(f'-- {label} --')
+
+    buffer = f'--- {label} ---'
+    buffer = buffer.rjust(80, '-')
+    print(buffer.upper())
 
 def check_path_exists(fullpath):
     if not fullpath.is_dir():
