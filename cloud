@@ -12,38 +12,9 @@ import configparser
 from pathlib import Path
 
 def main():
-    global CLOUDDATAPATH
-    global LOGFILEPATH
-    global LOGFILE
-
     print()
-    print(f'{sys.argv[0]} - version 20210130-R1')
-
-    config_file = Path.home() / '.config/cloud/cloud.conf'
-    check_file_exists(config_file)
-    config = configparser.ConfigParser()
-    config.read(config_file)
-
-    primary_data_dir   = config['primary']['local_data_dir']
-    primary_log_dir    = config['primary']['local_log_dir']
-    CLOUDDATAPATH = Path.home() / primary_data_dir 
-    check_path_exists(CLOUDDATAPATH)
-    #CLOUDDATAPATH.mkdir(parents=True, exist_ok=True)
-    LOGFILEPATH   = Path.home() / primary_log_dir 
-    check_path_exists(LOGFILEPATH)
-    #LOGFILEPATH.mkdir(parents=True, exist_ok=True)
-    LOGFILE = LOGFILEPATH / 'sync_log.txt'
-    check_file_exists(LOGFILE)
-
-    accounts = []
-    config_sections = config.sections()
-
-    for i in range(1, len(config_sections)):
-        label = config_sections[i]
-        local_data_dir = config[label]['local_data_dir']
-        remote_data_dir = config[label]['remote_data_dir']
-        accounts.append([label, str(CLOUDDATAPATH / local_data_dir), remote_data_dir])
-
+    print(f'{sys.argv[0]} - version 20210131')
+    accounts = read_accounts()
     if len(sys.argv) == 2:
         action = sys.argv[1]
         if action == 'push' or action == 'pull':
@@ -55,10 +26,41 @@ def main():
         usage()
     print()
 
+def read_accounts():
+    global CLOUDDATAPATH
+    global LOGFILEPATH
+    global LOGFILE
+
+    accounts = []
+
+    config_file = Path.home() / '.config/cloud/cloud.conf'
+    check_file_exists(config_file)
+    config = configparser.ConfigParser()
+    config.read(config_file)
+    config_sections = config.sections()
+
+    for i in range(len(config_sections)):
+        if config_sections[i] == 'primary':
+            primary_data_dir = config['primary']['local_data_dir']
+            primary_log_dir = config['primary']['local_log_dir']
+            CLOUDDATAPATH = Path.home() / primary_data_dir 
+            check_path_exists(CLOUDDATAPATH)
+        else:
+            label = config_sections[i]
+            local_data_dir = config[label]['local_data_dir']
+            remote_data_dir = config[label]['remote_data_dir']
+            accounts.append([label, str(CLOUDDATAPATH / local_data_dir), remote_data_dir])
+
+    LOGFILEPATH = Path.home() / primary_log_dir 
+    check_path_exists(LOGFILEPATH)
+    LOGFILE = LOGFILEPATH / 'sync_log.txt'
+    check_file_exists(LOGFILE)
+    return accounts
+
 def perform(action, accounts):
     label, local, remote  = 0, 1, 2
     for i in range(len(accounts)):
-        header(accounts[i][label])
+        header('SYNC ' + accounts[i][label])
         if action == 'push':
             cmd = f'rclone sync {accounts[i][local]} {accounts[i][remote]} --progress'
         if action == 'pull':
@@ -78,12 +80,21 @@ def status():
     with open(LOGFILE) as logf:
         content = logf.read().splitlines()
     count = len(content)
-    print(f'last action : {content[count-1][:45]}')
-    print(f'newest file : {content[count-1][48:]}')
+    #print(f'last action : {content[count-1][:45]}')
+    print('last action:')
+    print(f'    {content[count-1][:22]}')
+    print(f'    {content[count-1][23:45]}')
+    #print(f'newest file : {content[count-1][48:]}')
+    print('newest file:')
+    print(f'    {content[count-1][48:70]}')
+    print(f'    {content[count-1][71:]}')
 
     header('local file status')
-    print(f'last push   : {last_push_time()}')
-    print(f'newest file : {newest_file_time()}')
+    print('last push:')
+    print(f'    {last_push_time()}')
+    print('newest file:')
+    print(f'    {newest_file_time()[:22]}')
+    print(f'    {newest_file_time()[23:]}')
 
     if newest_file_time() > last_push_time():
         print()
