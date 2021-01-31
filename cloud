@@ -139,7 +139,6 @@ def formatted_time(epoch_time):
 
 def header(label):
     print()
-
     buffer = f'--- {label} ---'
     buffer = buffer.rjust(80, '-')
     print(buffer.upper())
