@@ -11,32 +11,27 @@ import glob
 import configparser
 from pathlib import Path
 
-#CLOUDDATAPATH.mkdir(parents=True, exist_ok=True)
-#LOGFILEPATH.mkdir(parents=True, exist_ok=True)
-
 def main():
     global CLOUDDATAPATH
     global LOGFILEPATH
     global LOGFILE
 
     print()
-    print(f'{sys.argv[0]} - version 20210130')
+    print(f'{sys.argv[0]} - version 20210130-R1')
 
     config_file = Path.home() / '.config/cloud/cloud.conf'
     check_file_exists(config_file)
-    
     config = configparser.ConfigParser()
     config.read(config_file)
 
     primary_data_dir   = config['primary']['local_data_dir']
     primary_log_dir    = config['primary']['local_log_dir']
-    
     CLOUDDATAPATH = Path.home() / primary_data_dir 
     check_path_exists(CLOUDDATAPATH)
-    
+    #CLOUDDATAPATH.mkdir(parents=True, exist_ok=True)
     LOGFILEPATH   = Path.home() / primary_log_dir 
     check_path_exists(LOGFILEPATH)
-    
+    #LOGFILEPATH.mkdir(parents=True, exist_ok=True)
     LOGFILE = LOGFILEPATH / 'sync_log.txt'
     check_file_exists(LOGFILE)
 
@@ -78,12 +73,18 @@ def status():
     cmd = f'rclone sync box:sync_log {LOGFILEPATH}'
     print(cmd)
     os.system(cmd)
-    tail_log_file()
+
+    header('remote file status')
+    with open(LOGFILE) as logf:
+        content = logf.read().splitlines()
+    count = len(content)
+    print(f'last action : {content[count-1][:45]}')
+    print(f'newest file : {content[count-1][48:]}')
+
     header('local file status')
-    #print('last push                                       newest local file')
-    #print(f'{last_push_time():45} : {newest_file_time()}')
     print(f'last push   : {last_push_time()}')
     print(f'newest file : {newest_file_time()}')
+
     if newest_file_time() > last_push_time():
         print()
         print('push needed...')
@@ -101,20 +102,6 @@ def update_log_file(action, date):
         logstring = f'{actionstring:45} : {newestfilestring}\n'
         logf.write(logstring)
     os.system(f'rclone sync {LOGFILEPATH} box:sync_log')
-    #header('cloud sync status')
-    #tail_log_file()
-
-def tail_log_file():
-    #print(f'tail {LOGFILE}:')
-    #print('last action                                     newest local file @ last action')
-    with open(LOGFILE) as logf:
-        content = logf.read().splitlines()
-    count = len(content)
-    #for i in range(count-2, count):
-    #    print(content[i])
-    header('remote file status')
-    print(f'last action : {content[count-1][:45]}')
-    print(f'newest file : {content[count-1][48:]}')
 
 def last_push_time():
     lastpushtime=''
