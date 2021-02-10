@@ -9,12 +9,15 @@ import sys
 import datetime
 import glob
 import configparser
+import subprocess
+import locale
 from pathlib import Path
 
 def main():
     print()
-    print(f'{sys.argv[0]} - version 20210131')
+    print(f'{sys.argv[0]} - version 20210209')
     accounts = read_accounts()
+    verify_remote_log_exists(accounts)
     if len(sys.argv) == 2:
         action = sys.argv[1]
         if action == 'push' or action == 'pull':
@@ -161,6 +164,26 @@ def check_file_exists(filepath):
     if not filepath.is_file():
         print (f'{filepath} doesn\'t exist')
         sys.exit()
+
+def verify_remote_log_exists(accounts):
+    # create remote sync_log path if doesn't exist
+    remote_sync_log_path = accounts[0][0] + ':sync_log'
+    cmd_list = f'rclone lsd {remote_sync_log_path}'.split()
+    proc_obj = subprocess.run(cmd_list)
+    if proc_obj.returncode != 0:
+        print(f'creating {remote_sync_log_path}')
+        cmd_list = f'rclone mkdir {remote_sync_log_path}'.split()
+        proc_obj = subprocess.run(cmd_list)
+    # create remote sync_log.txt if doesn't exist
+    remote_sync_log_file = remote_sync_log_path + '/sync_log.txt'
+    cmd_list = f'rclone lsf {remote_sync_log_file}'.split()
+    proc_obj = subprocess.run(cmd_list)
+    if proc_obj.returncode != 0:
+        print(f'creating {remote_sync_log_file}')
+        with open('sync_log.txt', 'w') as outfile:
+            outfile.write('#sync_log.txt\n')
+        cmd_list = f'rclone move sync_log.txt {remote_sync_log_path}'.split()
+        proc_obj = subprocess.run(cmd_list)
 
 def usage():
     print()
