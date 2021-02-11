@@ -22,7 +22,7 @@ def main():
         action = sys.argv[1]
         if action == 'push' or action == 'pull':
             perform(action, accounts)
-            status()
+            status(accounts)
         if action == 'status':
             status(accounts)
     else:
