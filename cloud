@@ -100,14 +100,17 @@ def status(accounts):
     if newest_file_time() > last_push_time():
         print()
         print('push needed...')
+        header('diff remote & local files')
+        get_remote_file_list(accounts)
+        get_local_file_list(accounts)
+        diff_file_lists()
     if latest_remote_file_time() > newest_file_time():
         print()
         print('pull needed...')
-
-    header('diff remote & local files')
-    get_remote_file_list(accounts)
-    get_local_file_list(accounts)
-    diff_file_lists()
+        header('diff remote & local files')
+        get_remote_file_list(accounts)
+        get_local_file_list(accounts)
+        diff_file_lists()
 
 def update_log_file(action, date):
     os.system(f'rclone sync box:sync_log {LOGFILEPATH}')
@@ -198,7 +201,6 @@ def get_remote_file_list(accounts):
         remotelist.append(accounts[i][2])
         filelist.append(accounts[i][2] + '.txt')
 
-    print()
     for i in range(len(remotelist)):
         print(f'getting remote {remotelist[i]} file list...')
         proc_list = ['rclone', 'lsl', remotelist[i]]
