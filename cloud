@@ -103,6 +103,8 @@ def status(accounts):
     if latest_remote_file_time() > newest_file_time():
         print()
         print('pull needed...')
+
+    headers('diff remote & local files')
     get_remote_file_list(accounts)
     get_local_file_list(accounts)
     diff_file_lists()
