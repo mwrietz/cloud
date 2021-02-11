@@ -103,6 +103,9 @@ def status():
     if latest_remote_file_time() > newest_file_time():
         print()
         print('pull needed...')
+    get_remote_file_list(accounts)
+    get_local_file_list(accounts)
+    diff_file_lists()
 
 def update_log_file(action, date):
     os.system(f'rclone sync box:sync_log {LOGFILEPATH}')
@@ -184,6 +187,99 @@ def verify_remote_log_exists(accounts):
             outfile.write('#sync_log.txt\n')
         cmd_list = f'rclone move sync_log.txt {remote_sync_log_path}'.split()
         proc_obj = subprocess.run(cmd_list)
+
+def get_remote_file_list(accounts):
+    filepath = Path(__file__).parent
+    remotelist = []
+    filelist = []
+    for i in range(len(accounts)):
+        remotelist.append(accounts[i][2])
+        filelist.append(accounts[i][2] + '.txt')
+
+    print()
+    for i in range(len(remotelist)):
+        print(f'getting remote {remotelist[i]} file list...')
+        proc_list = ['rclone', 'lsl', remotelist[i]]
+        proc_obj = subprocess.run(proc_list, stdout=subprocess.PIPE)
+        output_str = proc_obj.stdout.decode(locale.getdefaultlocale()[1])
+        out_file = filepath / filelist[i]
+        out_file.write_text(output_str)
+
+    # combine file lists
+    with open(filepath / 'combined.txt', 'w') as outfile:
+        for fname in filelist:
+            with open(filepath / fname, 'r') as infile:
+                for line in infile:
+                    outfile.write(line)
+
+    new_lines = []
+    final_lines = []
+    
+    with open(filepath / 'combined.txt', 'r') as in_file:
+        lines = in_file.readlines()
+
+    # remove file size
+    for line in lines:
+        new_line = line[10:]
+        new_lines.append(new_line)
+    new_lines.sort()
+
+    # remove fractions of seconds from file
+    for l in new_lines:
+        final_line = l[:19] + l[29:]
+        final_lines.append(final_line) 
+    final_lines.sort()
+
+    with open(filepath / 'files_remote.txt', 'w') as out_file:
+        out_file.writelines(final_lines)
+
+    for i in range(len(filelist)):
+        (filepath / filelist[i]).unlink()
+    (filepath / 'combined.txt').unlink()
+
+def get_local_file_list(accounts):
+    print(f'getting local file list...')
+    filepath = Path(__file__).parent
+    rootpath = Path.home() / 'Cloud'
+    proc_list = ['tree', '-ifaD', '--timefmt', '%Y-%m-%d %H:%M:%S', rootpath]
+    proc_obj = subprocess.run(proc_list, stdout=subprocess.PIPE)
+    output_str = proc_obj.stdout.decode(locale.getdefaultlocale()[1])
+    out_file = filepath / 'temp.txt'
+    out_file.write_text(output_str)
+
+    with open(filepath / 'temp.txt', 'r') as infile:
+        lines = infile.readlines()
+
+    filelines = [] 
+    for line in lines:
+        if len(line.split()) > 2:
+            fpath = Path(line[23:].strip('\n')) 
+            if fpath.is_file():
+                filelines.append(line)
+
+    bad_chars = ['[', '] ']
+    for i in range(len(accounts)):
+        bad_chars.append(str(rootpath / accounts[i][1]) + '/')
+    
+    new_lines = []
+    for line in filelines:
+        for i in bad_chars:
+            line = line.replace(i, '')
+        new_lines.append(line)
+
+    new_lines.sort()
+    (filepath / 'temp.txt').unlink()
+
+    with open(filepath / 'files_local.txt', 'w') as outfile:
+        outfile.writelines(new_lines)
+
+def diff_file_lists():
+    filepath = Path(__file__).parent
+    print('\ndiff files_remote.txt files_local.txt')
+    proc_list = ['diff', filepath / 'files_remote.txt', filepath / 'files_local.txt']
+    proc_obj = subprocess.run(proc_list, stdout=subprocess.PIPE)
+    output_str = proc_obj.stdout.decode(locale.getdefaultlocale()[1])
+    print(output_str)
 
 def usage():
     print()
