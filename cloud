@@ -33,15 +33,12 @@ def read_accounts():
     global CLOUDDATAPATH
     global LOGFILEPATH
     global LOGFILE
-
     accounts = []
-
     config_file = Path.home() / '.config/cloud/cloud.conf'
     check_file_exists(config_file)
     config = configparser.ConfigParser()
     config.read(config_file)
     config_sections = config.sections()
-
     for i in range(len(config_sections)):
         if config_sections[i] == 'primary':
             primary_data_dir = config['primary']['local_data_dir']
@@ -53,7 +50,6 @@ def read_accounts():
             local_data_dir = config[label]['local_data_dir']
             remote_data_dir = config[label]['remote_data_dir']
             accounts.append([label, str(CLOUDDATAPATH / local_data_dir), remote_data_dir])
-
     LOGFILEPATH = Path.home() / primary_log_dir 
     check_path_exists(LOGFILEPATH)
     LOGFILE = LOGFILEPATH / 'sync_log.txt'
@@ -69,7 +65,8 @@ def perform(action, accounts):
         if action == 'pull':
             cmd = f'rclone sync {accounts[i][remote]} {accounts[i][local]} --progress'
         print(cmd)
-        os.system(cmd)
+        cmd_list = cmd.split()
+        proc_obj = subprocess.run(cmd_list)
     date = datetime.datetime.now()
     update_log_file(action, date)
 
@@ -77,26 +74,22 @@ def status(accounts):
     header('sync log')
     cmd = f'rclone sync box:sync_log {LOGFILEPATH}'
     print(cmd)
-    os.system(cmd)
-
+    cmd_list = cmd.split()
+    proc_obj = subprocess.run(cmd_list)
     header('remote file status')
     with open(LOGFILE) as logf:
         content = logf.read().splitlines()
     count = len(content)
-    #print(f'last action : {content[count-1][:45]}')
     print(f'last action: {content[count-1][:22]}')
     print(f'    {content[count-1][23:45]}')
-    #print(f'newest file : {content[count-1][48:]}')
     print()
     print(f'newest file: {content[count-1][48:70]}')
     print(f'    {content[count-1][71:]}')
-
     header('local file status')
     print(f'last push:   {last_push_time()}')
     print()
     print(f'newest file: {newest_file_time()[:22]}')
     print(f'    {newest_file_time()[23:]}')
-
     if newest_file_time() > last_push_time():
         print()
         print('push needed...')
@@ -113,7 +106,8 @@ def status(accounts):
         diff_file_lists()
 
 def update_log_file(action, date):
-    os.system(f'rclone sync box:sync_log {LOGFILEPATH}')
+    cmd_list = f'rclone sync box:sync_log {LOGFILEPATH}'.split()
+    proc_obj = subprocess.run(cmd_list)
     with open(LOGFILE, 'a') as logf:
         actionstring = str(date)[:22] + ' '
         actionstring += action + ' '
@@ -121,7 +115,8 @@ def update_log_file(action, date):
         newestfilestring = newest_file_time() 
         logstring = f'{actionstring:45} : {newestfilestring}\n'
         logf.write(logstring)
-    os.system(f'rclone sync {LOGFILEPATH} box:sync_log')
+    cmd_list = f'rclone sync {LOGFILEPATH} box:sync_log'.split()
+    proc_obj = subprocess.run(cmd_list)
 
 def last_push_time():
     lastpushtime=''
@@ -200,7 +195,6 @@ def get_remote_file_list(accounts):
     for i in range(len(accounts)):
         remotelist.append(accounts[i][2])
         filelist.append(accounts[i][2] + '.txt')
-
     for i in range(len(remotelist)):
         print(f'getting remote {remotelist[i]} file list...')
         proc_list = ['rclone', 'lsl', remotelist[i]]
@@ -208,35 +202,28 @@ def get_remote_file_list(accounts):
         output_str = proc_obj.stdout.decode(locale.getdefaultlocale()[1])
         out_file = filepath / filelist[i]
         out_file.write_text(output_str)
-
     # combine file lists
     with open(filepath / 'combined.txt', 'w') as outfile:
         for fname in filelist:
             with open(filepath / fname, 'r') as infile:
                 for line in infile:
                     outfile.write(line)
-
     new_lines = []
     final_lines = []
-    
     with open(filepath / 'combined.txt', 'r') as in_file:
         lines = in_file.readlines()
-
     # remove file size
     for line in lines:
         new_line = line[10:]
         new_lines.append(new_line)
     new_lines.sort()
-
     # remove fractions of seconds from file
     for l in new_lines:
         final_line = l[:19] + l[29:]
         final_lines.append(final_line) 
     final_lines.sort()
-
     with open(filepath / 'files_remote.txt', 'w') as out_file:
         out_file.writelines(final_lines)
-
     for i in range(len(filelist)):
         (filepath / filelist[i]).unlink()
     (filepath / 'combined.txt').unlink()
@@ -250,30 +237,24 @@ def get_local_file_list(accounts):
     output_str = proc_obj.stdout.decode(locale.getdefaultlocale()[1])
     out_file = filepath / 'temp.txt'
     out_file.write_text(output_str)
-
     with open(filepath / 'temp.txt', 'r') as infile:
         lines = infile.readlines()
-
     filelines = [] 
     for line in lines:
         if len(line.split()) > 2:
             fpath = Path(line[23:].strip('\n')) 
             if fpath.is_file():
                 filelines.append(line)
-
     bad_chars = ['[', '] ']
     for i in range(len(accounts)):
         bad_chars.append(str(rootpath / accounts[i][1]) + '/')
-    
     new_lines = []
     for line in filelines:
         for i in bad_chars:
             line = line.replace(i, '')
         new_lines.append(line)
-
     new_lines.sort()
     (filepath / 'temp.txt').unlink()
-
     with open(filepath / 'files_local.txt', 'w') as outfile:
         outfile.writelines(new_lines)
 
