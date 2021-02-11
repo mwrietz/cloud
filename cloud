@@ -15,7 +15,7 @@ from pathlib import Path
 
 def main():
     print()
-    print(f'{sys.argv[0]} - version 20210209')
+    print(f'{sys.argv[0]} - version 20210211')
     accounts = read_accounts()
     verify_remote_log_exists(accounts)
     if len(sys.argv) == 2:
