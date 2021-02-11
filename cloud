@@ -24,7 +24,7 @@ def main():
             perform(action, accounts)
             status()
         if action == 'status':
-            status()
+            status(accounts)
     else:
         usage()
     print()
@@ -73,7 +73,7 @@ def perform(action, accounts):
     date = datetime.datetime.now()
     update_log_file(action, date)
 
-def status():
+def status(accounts):
     header('sync log')
     cmd = f'rclone sync box:sync_log {LOGFILEPATH}'
     print(cmd)
