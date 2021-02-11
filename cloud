@@ -104,7 +104,7 @@ def status(accounts):
         print()
         print('pull needed...')
 
-    headers('diff remote & local files')
+    header('diff remote & local files')
     get_remote_file_list(accounts)
     get_local_file_list(accounts)
     diff_file_lists()
