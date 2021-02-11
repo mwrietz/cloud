@@ -76,7 +76,7 @@ def status(accounts):
     print(cmd)
     cmd_list = cmd.split()
     proc_obj = subprocess.run(cmd_list)
-    header('remote file status')
+    header('file status : remote')
     with open(LOGFILE) as logf:
         content = logf.read().splitlines()
     count = len(content)
@@ -85,7 +85,7 @@ def status(accounts):
     print()
     print(f'newest file: {content[count-1][48:70]}')
     print(f'    {content[count-1][71:]}')
-    header('local file status')
+    header('file status : local')
     print(f'last push:   {last_push_time()}')
     print()
     print(f'newest file: {newest_file_time()[:22]}')
