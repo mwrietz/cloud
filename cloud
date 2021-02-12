@@ -60,14 +60,10 @@ def status(accounts):
     if newest_file_time() > last_push_time():
         print()
         print('push needed...')
-        header('diff remote & local files')
     if latest_remote_file_time() > newest_file_time():
         print()
         print('pull needed...')
-        header('diff remote & local files')
-    get_remote_file_list(accounts)
-    get_local_file_list(accounts)
-    diff_file_lists()
+    diff_file_lists(accounts)
 
 def update_log_file(action, date):
     execute_command(f'rclone sync box:sync_log {LOGFILEPATH}', verbose=False)
@@ -241,7 +237,10 @@ def get_local_file_list(accounts):
     with open(filepath / 'files_local.txt', 'w') as outfile:
         outfile.writelines(new_lines)
 
-def diff_file_lists():
+def diff_file_lists(accounts):
+    header('diff remote & local files')
+    get_remote_file_list(accounts)
+    get_local_file_list(accounts)
     filepath = Path(__file__).parent
     rfile = filepath / 'files_remote.txt'
     lfile = filepath / 'files_local.txt'
