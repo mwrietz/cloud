@@ -29,53 +29,20 @@ def main():
         usage()
     print()
 
-def read_accounts():
-    global CLOUDDATAPATH
-    global LOGFILEPATH
-    global LOGFILE
-    accounts = []
-    config_file = Path.home() / '.config/cloud/cloud.conf'
-    check_file_exists(config_file)
-    config = configparser.ConfigParser()
-    config.read(config_file)
-    config_sections = config.sections()
-    for i in range(len(config_sections)):
-        if config_sections[i] == 'primary':
-            primary_data_dir = config['primary']['local_data_dir']
-            primary_log_dir = config['primary']['local_log_dir']
-            CLOUDDATAPATH = Path.home() / primary_data_dir 
-            check_path_exists(CLOUDDATAPATH)
-        else:
-            label = config_sections[i]
-            local_data_dir = config[label]['local_data_dir']
-            remote_data_dir = config[label]['remote_data_dir']
-            accounts.append([label, str(CLOUDDATAPATH / local_data_dir), remote_data_dir])
-    LOGFILEPATH = Path.home() / primary_log_dir 
-    check_path_exists(LOGFILEPATH)
-    LOGFILE = LOGFILEPATH / 'sync_log.txt'
-    check_file_exists(LOGFILE)
-    return accounts
-
 def perform(action, accounts):
     label, local, remote  = 0, 1, 2
     for i in range(len(accounts)):
         header('SYNC ' + accounts[i][label])
         if action == 'push':
-            cmd = f'rclone sync {accounts[i][local]} {accounts[i][remote]} --progress'
+            execute_command(f'rclone sync {accounts[i][local]} {accounts[i][remote]}', verbose=True)
         if action == 'pull':
-            cmd = f'rclone sync {accounts[i][remote]} {accounts[i][local]} --progress'
-        print(cmd)
-        cmd_list = cmd.split()
-        proc_obj = subprocess.run(cmd_list)
+            execute_command(f'rclone sync {accounts[i][remote]} {accounts[i][local]}', verbose=True)
     date = datetime.datetime.now()
     update_log_file(action, date)
 
 def status(accounts):
     header('sync log')
-    cmd = f'rclone sync box:sync_log {LOGFILEPATH}'
-    print(cmd)
-    cmd_list = cmd.split()
-    proc_obj = subprocess.run(cmd_list)
+    execute_command(f'rclone sync box:sync_log {LOGFILEPATH}', verbose=True)
     header('file status : remote')
     with open(LOGFILE) as logf:
         content = logf.read().splitlines()
@@ -106,8 +73,7 @@ def status(accounts):
         diff_file_lists()
 
 def update_log_file(action, date):
-    cmd_list = f'rclone sync box:sync_log {LOGFILEPATH}'.split()
-    proc_obj = subprocess.run(cmd_list)
+    execute_command(f'rclone sync box:sync_log {LOGFILEPATH}', verbose=False)
     with open(LOGFILE, 'a') as logf:
         actionstring = str(date)[:22] + ' '
         actionstring += action + ' '
@@ -115,8 +81,34 @@ def update_log_file(action, date):
         newestfilestring = newest_file_time() 
         logstring = f'{actionstring:45} : {newestfilestring}\n'
         logf.write(logstring)
-    cmd_list = f'rclone sync {LOGFILEPATH} box:sync_log'.split()
-    proc_obj = subprocess.run(cmd_list)
+    execute_command(f'rclone sync {LOGFILEPATH} box:sync_log', verbose=False)
+
+def read_accounts():
+    global CLOUDDATAPATH
+    global LOGFILEPATH
+    global LOGFILE
+    accounts = []
+    config_file = Path.home() / '.config/cloud/cloud.conf'
+    check_file_exists(config_file)
+    config = configparser.ConfigParser()
+    config.read(config_file)
+    config_sections = config.sections()
+    for i in range(len(config_sections)):
+        if config_sections[i] == 'primary':
+            primary_data_dir = config['primary']['local_data_dir']
+            primary_log_dir = config['primary']['local_log_dir']
+            CLOUDDATAPATH = Path.home() / primary_data_dir 
+            check_path_exists(CLOUDDATAPATH)
+        else:
+            label = config_sections[i]
+            local_data_dir = config[label]['local_data_dir']
+            remote_data_dir = config[label]['remote_data_dir']
+            accounts.append([label, str(CLOUDDATAPATH / local_data_dir), remote_data_dir])
+    LOGFILEPATH = Path.home() / primary_log_dir 
+    check_path_exists(LOGFILEPATH)
+    LOGFILE = LOGFILEPATH / 'sync_log.txt'
+    check_file_exists(LOGFILE)
+    return accounts
 
 def last_push_time():
     lastpushtime=''
@@ -171,22 +163,16 @@ def check_file_exists(filepath):
 def verify_remote_log_exists(accounts):
     # create remote sync_log path if doesn't exist
     remote_sync_log_path = accounts[0][0] + ':sync_log'
-    cmd_list = f'rclone lsd {remote_sync_log_path}'.split()
-    proc_obj = subprocess.run(cmd_list)
-    if proc_obj.returncode != 0:
+    if execute_command(f'rclone lsd {remote_sync_log_path}', verbose=False) != 0:
         print(f'creating {remote_sync_log_path}')
-        cmd_list = f'rclone mkdir {remote_sync_log_path}'.split()
-        proc_obj = subprocess.run(cmd_list)
+        execute_command(f'rclone mkdir {remote_sync_log_path}', verbose=False)
     # create remote sync_log.txt if doesn't exist
     remote_sync_log_file = remote_sync_log_path + '/sync_log.txt'
-    cmd_list = f'rclone lsf {remote_sync_log_file}'.split()
-    proc_obj = subprocess.run(cmd_list)
-    if proc_obj.returncode != 0:
+    if execute_command(f'rclone lsf {remote_sync_log_file}', verbose=False) != 0:
         print(f'creating {remote_sync_log_file}')
         with open('sync_log.txt', 'w') as outfile:
             outfile.write('#sync_log.txt\n')
-        cmd_list = f'rclone move sync_log.txt {remote_sync_log_path}'.split()
-        proc_obj = subprocess.run(cmd_list)
+        execute_command(f'rclone move sync_log.txt {remote_sync_log_path}', verbose=False)
 
 def get_remote_file_list(accounts):
     filepath = Path(__file__).parent
@@ -260,11 +246,18 @@ def get_local_file_list(accounts):
 
 def diff_file_lists():
     filepath = Path(__file__).parent
-    print('\ndiff files_remote.txt files_local.txt')
-    proc_list = ['diff', filepath / 'files_remote.txt', filepath / 'files_local.txt']
-    proc_obj = subprocess.run(proc_list, stdout=subprocess.PIPE)
-    output_str = proc_obj.stdout.decode(locale.getdefaultlocale()[1])
-    print(output_str)
+    rfile = filepath / 'files_remote.txt'
+    lfile = filepath / 'files_local.txt'
+    execute_command(f'diff {rfile} {lfile}', verbose=True)
+
+def execute_command(cmd, verbose=True):
+    if verbose == True:
+        print(cmd)
+    cmd_list = cmd.split()
+    result = subprocess.run(cmd_list, capture_output=True, text=True)
+    if verbose == True:
+        print(result.stdout)
+    return result.returncode
 
 def usage():
     print()
