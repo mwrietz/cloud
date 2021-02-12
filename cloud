@@ -61,16 +61,13 @@ def status(accounts):
         print()
         print('push needed...')
         header('diff remote & local files')
-        get_remote_file_list(accounts)
-        get_local_file_list(accounts)
-        diff_file_lists()
     if latest_remote_file_time() > newest_file_time():
         print()
         print('pull needed...')
         header('diff remote & local files')
-        get_remote_file_list(accounts)
-        get_local_file_list(accounts)
-        diff_file_lists()
+    get_remote_file_list(accounts)
+    get_local_file_list(accounts)
+    diff_file_lists()
 
 def update_log_file(action, date):
     execute_command(f'rclone sync box:sync_log {LOGFILEPATH}', verbose=False)
