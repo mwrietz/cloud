@@ -6,6 +6,7 @@ Primary motivation --- my cloud services do not provide a good syncing solution 
 
 ## Dependencies
 * rclone
+* tree
 
 ## Example Usage
 * cloud status  - display current status of local folder relative to cloud folder
