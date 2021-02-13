@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+
 # cloud - sync local directory with cloud service using rclone
 
 import datetime
@@ -15,7 +16,7 @@ from pathlib import Path
 
 def main():
     print()
-    print(f'{sys.argv[0]} - version 20210212')
+    print(f'{sys.argv[0]} - version 20210213')
     accounts = read_accounts()
     verify_remote_log_exists(accounts)
     if len(sys.argv) == 2:
@@ -30,6 +31,7 @@ def main():
     print()
 
 def perform(action, accounts):
+    '''Sync remote accounts with local files, push/pull as appropriate'''
     label, local, remote  = 0, 1, 2
     header(f'sync accounts : {action}')
     for i in range(len(accounts)):
@@ -41,6 +43,7 @@ def perform(action, accounts):
     update_log_file(action, date)
 
 def status(accounts):
+    '''Return sync status and diff remote and local file lists'''
     header('sync log')
     execute_command(f'rclone sync box:sync_log {LOGFILEPATH}', verbose=True)
     header('file status')
@@ -48,12 +51,12 @@ def status(accounts):
         content = logf.read().splitlines()
     count = len(content)
     print(f'last remote action: {content[count-1][:22]} {content[count-1][23:45]}')
-    print(f'last local push:    {last_push_time()}')
+    print(f'last local push:    {last_remote_push_time()}')
     print(f'newest remote file: {content[count-1][48:70]}')
     print(f'    {content[count-1][71:]}')
     print(f'newest local file:  {newest_local_file_time()[:22]}')
     print(f'    {newest_local_file_time()[23:]}')
-    if newest_local_file_time() > last_push_time():
+    if newest_local_file_time() > last_local_push_time():
         print()
         print('push needed...')
     if latest_remote_file_time() > newest_local_file_time():
@@ -62,6 +65,7 @@ def status(accounts):
     diff_file_lists(accounts)
 
 def update_log_file(action, date):
+    '''Download remote log file, update log, and upload to remote'''
     execute_command(f'rclone sync box:sync_log {LOGFILEPATH}', verbose=False)
     with open(LOGFILE, 'a') as logf:
         actionstring = str(date)[:22] + ' '
@@ -73,6 +77,7 @@ def update_log_file(action, date):
     execute_command(f'rclone sync {LOGFILEPATH} box:sync_log', verbose=False)
 
 def read_accounts():
+    '''Read configuration file, setup account list, and return account list'''
     global CLOUDDATAPATH
     global LOGFILEPATH
     global LOGFILE
@@ -99,7 +104,22 @@ def read_accounts():
     check_file_exists(LOGFILE)
     return accounts
 
-def last_push_time():
+def last_local_push_time():
+    '''Get last local push time and return'''
+    lastpushtime=''
+    hostname = socket.gethostname()
+    with open(LOGFILE) as f:
+        content = f.readlines()
+    l = len(content)
+    for i in range(l):
+        words = content[l-1-i].split()
+        if words[2] == 'push' and hostname in words[3]:
+            lastpushtime = words[0] + ' ' + words[1]
+            break
+    return lastpushtime
+    
+def last_remote_push_time():
+    '''Open log file, find and return last push time'''
     lastpushtime=''
     with open(LOGFILE) as f:
         content = f.readlines()
