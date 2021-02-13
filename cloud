@@ -197,7 +197,7 @@ def get_remote_file_list(accounts):
         final_line = l[:19] + l[29:]
         final_lines.append(final_line) 
     final_lines.sort()
-    with open(filepath / 'files_remote.txt', 'w') as out_file:
+    with open(filepath / 'remotes.txt', 'w') as out_file:
         out_file.writelines(final_lines)
     for i in range(len(filelist)):
         (filepath / filelist[i]).unlink()
@@ -230,7 +230,7 @@ def get_local_file_list(accounts):
         new_lines.append(line)
     new_lines.sort()
     (filepath / 'temp.txt').unlink()
-    with open(filepath / 'files_local.txt', 'w') as outfile:
+    with open(filepath / 'locals.txt', 'w') as outfile:
         outfile.writelines(new_lines)
 
 def diff_file_lists(accounts):
@@ -239,8 +239,8 @@ def diff_file_lists(accounts):
     get_remote_file_list(accounts)
     get_local_file_list(accounts)
     filepath = Path(__file__).parent
-    rfile = filepath / 'files_remote.txt'
-    lfile = filepath / 'files_local.txt'
+    rfile = filepath / 'remotes.txt'
+    lfile = filepath / 'locals.txt'
     execute_command(f'diff {rfile} {lfile}', verbose=True)
 
 def execute_command(cmd, verbose=True):
