@@ -31,8 +31,8 @@ def main():
 
 def perform(action, accounts):
     label, local, remote  = 0, 1, 2
+    header(f'sync accounts : {action}')
     for i in range(len(accounts)):
-        header('SYNC ' + accounts[i][label])
         if action == 'push':
             execute_command(f'rclone sync {accounts[i][local]} {accounts[i][remote]}', verbose=True)
         if action == 'pull':
@@ -43,24 +43,20 @@ def perform(action, accounts):
 def status(accounts):
     header('sync log')
     execute_command(f'rclone sync box:sync_log {LOGFILEPATH}', verbose=True)
-    header('file status : remote')
+    header('file status')
     with open(LOGFILE) as logf:
         content = logf.read().splitlines()
     count = len(content)
-    print(f'last action: {content[count-1][:22]}')
-    print(f'    {content[count-1][23:45]}')
-    print()
-    print(f'newest file: {content[count-1][48:70]}')
+    print(f'last remote action: {content[count-1][:22]} {content[count-1][23:45]}')
+    print(f'last local push:    {last_push_time()}')
+    print(f'newest remote file: {content[count-1][48:70]}')
     print(f'    {content[count-1][71:]}')
-    header('file status : local')
-    print(f'last push:   {last_push_time()}')
-    print()
-    print(f'newest file: {newest_file_time()[:22]}')
-    print(f'    {newest_file_time()[23:]}')
-    if newest_file_time() > last_push_time():
+    print(f'newest local file:  {newest_local_file_time()[:22]}')
+    print(f'    {newest_local_file_time()[23:]}')
+    if newest_local_file_time() > last_push_time():
         print()
         print('push needed...')
-    if latest_remote_file_time() > newest_file_time():
+    if latest_remote_file_time() > newest_local_file_time():
         print()
         print('pull needed...')
     diff_file_lists(accounts)
@@ -71,7 +67,7 @@ def update_log_file(action, date):
         actionstring = str(date)[:22] + ' '
         actionstring += action + ' '
         actionstring += getpass.getuser() + '@' + socket.gethostname() + ' '
-        newestfilestring = newest_file_time() 
+        newestfilestring = newest_local_file_time() 
         logstring = f'{actionstring:45} : {newestfilestring}\n'
         logf.write(logstring)
     execute_command(f'rclone sync {LOGFILEPATH} box:sync_log', verbose=False)
@@ -125,7 +121,7 @@ def latest_remote_file_time():
     latestfiletime = words[colonindex+1] + ' ' + words[colonindex+2]
     return latestfiletime
 
-def newest_file_time():
+def newest_local_file_time():
     os.chdir(CLOUDDATAPATH)
     gfiles = sorted(glob.glob(str(CLOUDDATAPATH / '**/*'), recursive = True), key=os.path.getmtime)    
     newest = gfiles[-1]
@@ -253,7 +249,8 @@ def execute_command(cmd, verbose=True):
     cmd_list = cmd.split()
     result = subprocess.run(cmd_list, capture_output=True, text=True)
     if verbose == True:
-        print(result.stdout)
+        if len(result.stdout) > 0:
+            print(result.stdout)
     return result.returncode
 
 def usage():
