@@ -16,7 +16,7 @@ from pathlib import Path
 
 def main():
     print()
-    print(f'{sys.argv[0]} - version 20210213')
+    print(f'{sys.argv[0]} - version 20210218')
     accounts = read_accounts()
     verify_remote_log_exists(accounts)
     if len(sys.argv) == 2:
@@ -54,12 +54,12 @@ def status(accounts):
     print(f'last local push:    {last_remote_push_time()}')
     print(f'newest remote file: {content[count-1][48:70]}')
     print(f'    {content[count-1][71:]}')
-    print(f'newest local file:  {newest_local_file_time()[:22]}')
-    print(f'    {newest_local_file_time()[23:]}')
-    if newest_local_file_time() > last_local_push_time():
+    print(f'newest local file:  {latest_local_file_time()[:22]}')
+    print(f'    {latest_local_file_time()[23:]}')
+    if latest_local_file_time() > last_local_push_time():
         print()
         print('push needed...')
-    if latest_remote_file_time() > newest_local_file_time():
+    if latest_remote_file_time() > latest_local_file_time():
         print()
         print('pull needed...')
     diff_file_lists(accounts)
@@ -141,7 +141,7 @@ def latest_remote_file_time():
     latestfiletime = words[colonindex+1] + ' ' + words[colonindex+2]
     return latestfiletime
 
-def newest_local_file_time():
+def latest_local_file_time():
     os.chdir(CLOUDDATAPATH)
     gfiles = sorted(glob.glob(str(CLOUDDATAPATH / '**/*'), recursive = True), key=os.path.getmtime)    
     newest = gfiles[-1]
