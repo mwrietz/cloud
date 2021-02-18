@@ -71,7 +71,7 @@ def update_log_file(action, date):
         actionstring = str(date)[:22] + ' '
         actionstring += action + ' '
         actionstring += getpass.getuser() + '@' + socket.gethostname() + ' '
-        newestfilestring = newest_local_file_time() 
+        newestfilestring = latest_local_file_time() 
         logstring = f'{actionstring:45} : {newestfilestring}\n'
         logf.write(logstring)
     execute_command(f'rclone sync {LOGFILEPATH} box:sync_log', verbose=False)
