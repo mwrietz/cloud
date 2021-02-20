@@ -312,7 +312,6 @@ def get_local_file_list(accounts):
         outfile.writelines(new_lines)
 
 def diff_file_lists(accounts):
-    print()
     header('diff remote & local files')
     get_remote_file_list(accounts)
     get_local_file_list(accounts)
