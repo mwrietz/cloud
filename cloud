@@ -318,6 +318,7 @@ def diff_file_lists(accounts):
     filepath = Path(__file__).parent
     rfile = filepath / 'remotes.txt'
     lfile = filepath / 'locals.txt'
+    print()
     execute_command(f'diff {rfile} {lfile}', verbose=True)
 
 def execute_command(cmd, verbose=True):
