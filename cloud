@@ -68,7 +68,9 @@ def status(accounts):
     if latest_remote_file_time() > latest_local_file_time():
         print()
         print('pull needed...')
-    diff_file_lists(accounts)
+    print()
+    if input('diff (y/N)?') == 'y':
+        diff_file_lists(accounts)
 
 def update_log_file(action, date):
     '''Download remote log file, update log, and upload to remote'''
