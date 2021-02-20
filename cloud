@@ -114,8 +114,8 @@ def read_accounts():
 
 def last_remote_info():
     '''Get last local push/pull info and return'''
-    lastpushinfo = [] 
-    lastpullinfo = []
+    lastpushinfo = ['', ''] 
+    lastpullinfo = ['', '']
     lastinfo = []
     hostname = socket.gethostname()
     with open(LOGFILE) as f:
