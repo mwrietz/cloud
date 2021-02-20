@@ -57,10 +57,10 @@ def status(accounts):
     print(f'local pull          {last_local_info()[1][0]}      {last_local_info()[1][1]}')
     print()
     print(f'newest remote file: {content[count-1][48:70]}')
-    print(f'    {content[count-1][71:]}')
+    print(f'{content[count-1][71:]}')
     print()
     print(f'newest local file:  {latest_local_file_time()[:22]}')
-    print(f'    {latest_local_file_time()[23:]}')
+    print(f'{latest_local_file_time()[23:]}')
 
     if latest_local_file_time() > last_local_push_time():
         print()
