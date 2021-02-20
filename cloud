@@ -16,7 +16,7 @@ from pathlib import Path
 
 def main():
     print()
-    print(f'{sys.argv[0]} - version 20210218')
+    print(f'{sys.argv[0]} - version 20210219')
     accounts = read_accounts()
     verify_remote_log_exists(accounts)
     if len(sys.argv) == 2:
@@ -50,13 +50,18 @@ def status(accounts):
     with open(LOGFILE) as logf:
         content = logf.read().splitlines()
     count = len(content)
-    print(f'last remote action: {content[count-1][:22]} {content[count-1][23:45]}')
-    print(f'last remote push:   {last_remote_push_time()}')
-    print(f'last local push:    {last_local_push_time()}')
+    print('last action:        time:                       user@host:')
+    print(f'remote push         {last_remote_info()[0][0]}      {last_remote_info()[0][1]}')
+    print(f'remote pull         {last_remote_info()[1][0]}      {last_remote_info()[1][1]}')
+    print(f'local push          {last_local_info()[0][0]}      {last_local_info()[0][1]}')
+    print(f'local pull          {last_local_info()[1][0]}      {last_local_info()[1][1]}')
+    print()
     print(f'newest remote file: {content[count-1][48:70]}')
     print(f'    {content[count-1][71:]}')
+    print()
     print(f'newest local file:  {latest_local_file_time()[:22]}')
     print(f'    {latest_local_file_time()[23:]}')
+
     if latest_local_file_time() > last_local_push_time():
         print()
         print('push needed...')
@@ -104,6 +109,58 @@ def read_accounts():
     LOGFILE = LOGFILEPATH / 'sync_log.txt'
     check_file_exists(LOGFILE)
     return accounts
+
+def last_remote_info():
+    '''Get last local push/pull info and return'''
+    lastpushinfo = [] 
+    lastpullinfo = []
+    lastinfo = []
+    hostname = socket.gethostname()
+    with open(LOGFILE) as f:
+        content = f.readlines()
+    l = len(content)
+    for i in range(l):
+        words = content[l-1-i].split()
+        if words[2] == 'push':
+            date_and_time = words[0] + ' ' + words[1]
+            userhost = words[3]
+            lastpushinfo = [date_and_time, userhost]
+            break
+    for i in range(l):
+        words = content[l-1-i].split()
+        if words[2] == 'pull':
+            date_and_time = words[0] + ' ' + words[1]
+            userhost = words[3]
+            lastpullinfo = [date_and_time, userhost]
+            break
+    lastinfo = [lastpushinfo, lastpullinfo]
+    return lastinfo
+
+def last_local_info():
+    '''Get last local push/pull info and return'''
+    lastpushinfo = [] 
+    lastpullinfo = []
+    lastinfo = []
+    hostname = socket.gethostname()
+    with open(LOGFILE) as f:
+        content = f.readlines()
+    l = len(content)
+    for i in range(l):
+        words = content[l-1-i].split()
+        if words[2] == 'push' and ('@' + hostname) in words[3]:
+            date_and_time = words[0] + ' ' + words[1]
+            userhost = words[3]
+            lastpushinfo = [date_and_time, userhost]
+            break
+    for i in range(l):
+        words = content[l-1-i].split()
+        if words[2] == 'pull' and('@' + hostname) in words[3]:
+            date_and_time = words[0] + ' ' + words[1]
+            userhost = words[3]
+            lastpullinfo = [date_and_time, userhost]
+            break
+    lastinfo = [lastpushinfo, lastpullinfo]
+    return lastinfo
 
 def last_local_push_time():
     '''Get last local push time and return'''
