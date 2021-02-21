@@ -2,6 +2,12 @@
 
 # cloud - sync local directory with cloud service using rclone
 
+# todo
+# verify local config folder exists
+# verify local config file exists
+# verify local log folder exists
+# verify local log file exists
+
 import datetime
 import getpass
 import os
@@ -17,8 +23,7 @@ from pathlib import Path
 def main():
     print()
     print(f'{sys.argv[0]} - version 20210219')
-    accounts = read_accounts()
-    verify_remote_log_exists(accounts)
+    accounts = initialize()
     if len(sys.argv) == 2:
         action = sys.argv[1]
         if action == 'push' or action == 'pull':
@@ -29,6 +34,35 @@ def main():
     else:
         usage()
     print()
+
+def initialize():
+    '''Verify setup, read configuration file, setup account list, and return account list'''
+    global CLOUDDATAPATH
+    global LOGFILEPATH
+    global LOGFILE
+    accounts = []
+    config_file = Path.home() / '.config/cloud/cloud.conf'
+    check_file_exists(config_file)
+    config = configparser.ConfigParser()
+    config.read(config_file)
+    config_sections = config.sections()
+    for i in range(len(config_sections)):
+        if config_sections[i] == 'primary':
+            primary_data_dir = config['primary']['local_data_dir']
+            primary_log_dir = config['primary']['local_log_dir']
+            CLOUDDATAPATH = Path.home() / primary_data_dir 
+            check_path_exists(CLOUDDATAPATH)
+        else:
+            label = config_sections[i]
+            local_data_dir = config[label]['local_data_dir']
+            remote_data_dir = config[label]['remote_data_dir']
+            accounts.append([label, str(CLOUDDATAPATH / local_data_dir), remote_data_dir])
+    LOGFILEPATH = Path.home() / primary_log_dir 
+    check_path_exists(LOGFILEPATH)
+    LOGFILE = LOGFILEPATH / 'sync_log.txt'
+    check_file_exists(LOGFILE)
+    verify_remote_log_exists(accounts)
+    return accounts
 
 def perform(action, accounts):
     '''Sync remote accounts with local files, push/pull as appropriate'''
@@ -84,33 +118,6 @@ def update_log_file(action, date):
         logf.write(logstring)
     execute_command(f'rclone sync {LOGFILEPATH} box:sync_log', verbose=False)
 
-def read_accounts():
-    '''Read configuration file, setup account list, and return account list'''
-    global CLOUDDATAPATH
-    global LOGFILEPATH
-    global LOGFILE
-    accounts = []
-    config_file = Path.home() / '.config/cloud/cloud.conf'
-    check_file_exists(config_file)
-    config = configparser.ConfigParser()
-    config.read(config_file)
-    config_sections = config.sections()
-    for i in range(len(config_sections)):
-        if config_sections[i] == 'primary':
-            primary_data_dir = config['primary']['local_data_dir']
-            primary_log_dir = config['primary']['local_log_dir']
-            CLOUDDATAPATH = Path.home() / primary_data_dir 
-            check_path_exists(CLOUDDATAPATH)
-        else:
-            label = config_sections[i]
-            local_data_dir = config[label]['local_data_dir']
-            remote_data_dir = config[label]['remote_data_dir']
-            accounts.append([label, str(CLOUDDATAPATH / local_data_dir), remote_data_dir])
-    LOGFILEPATH = Path.home() / primary_log_dir 
-    check_path_exists(LOGFILEPATH)
-    LOGFILE = LOGFILEPATH / 'sync_log.txt'
-    check_file_exists(LOGFILE)
-    return accounts
 
 def last_remote_info():
     '''Get last local push/pull info and return'''
