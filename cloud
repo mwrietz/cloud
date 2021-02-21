@@ -58,9 +58,12 @@ def initialize():
             remote_data_dir = config[label]['remote_data_dir']
             accounts.append([label, str(CLOUDDATAPATH / local_data_dir), remote_data_dir])
     LOGFILEPATH = Path.home() / primary_log_dir 
-    check_path_exists(LOGFILEPATH)
+    LOGFILEPATH.mkdir(parents=True, exist_ok=True)
     LOGFILE = LOGFILEPATH / 'sync_log.txt'
-    check_file_exists(LOGFILE)
+    if not LOGFILE.is_file():
+        LOGFILE.touch()
+        with open(LOGFILE, 'w') as f:
+            f.write('# sync_log.txt\n')
     verify_remote_log_exists(accounts)
     return accounts
 
