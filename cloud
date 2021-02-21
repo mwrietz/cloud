@@ -140,8 +140,8 @@ def last_remote_info():
 
 def last_local_info():
     '''Get last local push/pull info and return'''
-    lastpushinfo = [] 
-    lastpullinfo = []
+    lastpushinfo = ['', ''] 
+    lastpullinfo = ['', '']
     lastinfo = []
     hostname = socket.gethostname()
     with open(LOGFILE) as f:
