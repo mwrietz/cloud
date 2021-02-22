@@ -93,8 +93,8 @@ def status(accounts):
     print(f'local push          {last_local_info()[0][0]}      {last_local_info()[0][1]}')
     print(f'local pull          {last_local_info()[1][0]}      {last_local_info()[1][1]}')
     print()
-    print(f'newest remote file: {content[count-1][48:70]}')
-    print(f'{content[count-1][71:]}')
+    print(f'newest remote file: {content[count-1][58:80]}')
+    print(f'{content[count-1][81:]}')
     print()
     print(f'newest local file:  {latest_local_file_time()[:22]}')
     print(f'{latest_local_file_time()[23:]}')
@@ -117,7 +117,7 @@ def update_log_file(action, date):
         actionstring += action + ' '
         actionstring += getpass.getuser() + '@' + socket.gethostname() + ' '
         newestfilestring = latest_local_file_time() 
-        logstring = f'{actionstring:45} : {newestfilestring}\n'
+        logstring = f'{actionstring:55} : {newestfilestring}\n'
         logf.write(logstring)
     execute_command(f'rclone sync {LOGFILEPATH} box:sync_log', verbose=False)
 
