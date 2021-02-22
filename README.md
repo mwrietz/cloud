@@ -14,6 +14,4 @@ Primary motivation --- my cloud services do not provide a good syncing solution 
 * cloud push    - sync cloud folder with local folder
 
 ## Todo
-o fix longer hostname in log file
-* verify if sync_log exists on first cloud account
-* create sync_log.txt if doesn't exist 
+* create local sync folders if they don't exist
