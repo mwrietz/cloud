@@ -2,12 +2,6 @@
 
 # cloud - sync local directory with cloud service using rclone
 
-# todo
-# verify local config folder exists
-# verify local config file exists
-# verify local log folder exists
-# verify local log file exists
-
 import datetime
 import getpass
 import os
@@ -22,7 +16,7 @@ from pathlib import Path
 
 def main():
     print()
-    print(f'{sys.argv[0]} - version 20210221')
+    print(f'{sys.argv[0]} - version 20210225')
     accounts = initialize()
     if len(sys.argv) == 2:
         action = sys.argv[1]
@@ -96,13 +90,15 @@ def status(accounts):
     print(f'newest remote file: {content[count-1][58:80]}')
     print(f'{content[count-1][81:]}')
     print()
-    print(f'newest local file:  {latest_local_file_time()[:22]}')
-    print(f'{latest_local_file_time()[23:]}')
+    latest_local_file_time = latest_local_file()[:22]
+    latest_local_file_name = latest_local_file()[23:]
+    print(f'newest local file:  {latest_local_file_time}')
+    print(f'{latest_local_file_name}')
 
-    if latest_local_file_time() > last_local_push_time():
+    if latest_local_file_time > last_local_push_time():
         print()
         print('push needed...')
-    if latest_remote_file_time() > latest_local_file_time():
+    if latest_remote_file_time() > latest_local_file_time:
         print()
         print('pull needed...')
     print()
@@ -116,7 +112,7 @@ def update_log_file(action, date):
         actionstring = str(date)[:22] + ' '
         actionstring += action + ' '
         actionstring += getpass.getuser() + '@' + socket.gethostname() + ' '
-        newestfilestring = latest_local_file_time() 
+        newestfilestring = latest_local_file() 
         logstring = f'{actionstring:55} : {newestfilestring}\n'
         logf.write(logstring)
     execute_command(f'rclone sync {LOGFILEPATH} box:sync_log', verbose=False)
@@ -211,7 +207,7 @@ def latest_remote_file_time():
     latestfiletime = words[colonindex+1] + ' ' + words[colonindex+2]
     return latestfiletime
 
-def latest_local_file_time():
+def latest_local_file():
     os.chdir(CLOUDDATAPATH)
     gfiles = sorted(glob.glob(str(CLOUDDATAPATH / '**/*'), recursive = True), key=os.path.getmtime)    
     newest = gfiles[-1]
