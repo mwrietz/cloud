@@ -16,7 +16,7 @@ from pathlib import Path
 
 def main():
     print()
-    print(f'{sys.argv[0]} - version 20210225')
+    print(f'{sys.argv[0]} - version 20210227')
     accounts = initialize()
     if len(sys.argv) == 2:
         action = sys.argv[1]
@@ -45,7 +45,8 @@ def initialize():
             primary_data_dir = config['primary']['local_data_dir']
             primary_log_dir = config['primary']['local_log_dir']
             CLOUDDATAPATH = Path.home() / primary_data_dir 
-            check_path_exists(CLOUDDATAPATH)
+            # check_path_exists(CLOUDDATAPATH)
+            CLOUDDATAPATH.mkdir(parents=True, exist_ok=True)
         else:
             label = config_sections[i]
             local_data_dir = config[label]['local_data_dir']
@@ -95,6 +96,8 @@ def status(accounts):
     print(f'newest local file:  {latest_local_file_time}')
     print(f'{latest_local_file_name}')
 
+    #print(latest_local_file_time)
+    #print(last_local_push_time())
     if latest_local_file_time > last_local_push_time():
         print()
         print('push needed...')
@@ -225,10 +228,10 @@ def header(label):
     buffer = buffer.rjust(80, '-')
     print(buffer.upper())
 
-def check_path_exists(fullpath):
-    if not fullpath.is_dir():
-        print (f'{fullpath} doesn\'t exist')
-        sys.exit()
+#def check_path_exists(fullpath):
+#    if not fullpath.is_dir():
+#        print (f'{fullpath} doesn\'t exist')
+#        sys.exit()
 
 def check_file_exists(filepath):
     if not filepath.is_file():
