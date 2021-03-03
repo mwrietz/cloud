@@ -94,7 +94,8 @@ def status(accounts):
     latest_local_file_name = latest_local_file()[23:]
     print(f'newest local file:  {latest_local_file_time}')
     print(f'{latest_local_file_name}')
-    if latest_local_file_time > last_local_push_time():
+    #if latest_local_file_time > last_local_push_time():
+    if latest_local_file_time > latest_remote_file_time():
         print()
         print('push needed...')
     if latest_remote_file_time() > latest_local_file_time:
