@@ -16,7 +16,7 @@ from pathlib import Path
 
 def main():
     print()
-    print(f'{sys.argv[0]} - version 20210301')
+    print(f'{sys.argv[0]} - version 20210302')
     accounts = initialize()
     if len(sys.argv) == 2:
         action = sys.argv[1]
