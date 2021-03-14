@@ -30,7 +30,9 @@ def main():
     print()
 
 def initialize():
-    '''Verify setup, read configuration file, setup account list, and return account list'''
+
+    '''Verify setup, read configuration file, setup and return account list'''
+
     global CLOUDDATAPATH
     global LOGFILEPATH
     global LOGFILE
@@ -62,7 +64,9 @@ def initialize():
     return accounts
 
 def perform(action, accounts):
+
     '''Sync remote accounts with local files, push/pull as appropriate'''
+
     label, local, remote  = 0, 1, 2
     header(f'sync accounts : {action}')
     for i in range(len(accounts)):
@@ -74,7 +78,9 @@ def perform(action, accounts):
     update_log_file(action, date)
 
 def status(accounts):
+
     '''Return sync status and diff remote and local file lists'''
+
     header('sync log')
     execute_command(f'rclone sync box:sync_log {LOGFILEPATH}', verbose=True)
     header('file status')
@@ -105,7 +111,9 @@ def status(accounts):
         diff_file_lists(accounts)
 
 def update_log_file(action, date):
+
     '''Download remote log file, update log, and upload to remote'''
+
     execute_command(f'rclone sync box:sync_log {LOGFILEPATH}', verbose=False)
     with open(LOGFILE, 'a') as logf:
         actionstring = str(date)[:22] + ' ' + action + ' '
@@ -116,7 +124,9 @@ def update_log_file(action, date):
     execute_command(f'rclone sync {LOGFILEPATH} box:sync_log', verbose=False)
 
 def last_remote_info():
+
     '''Get last remote push/pull info and return'''
+
     lastpushinfo = ['', ''] 
     lastpullinfo = ['', '']
     lastinfo = []
@@ -142,7 +152,9 @@ def last_remote_info():
     return lastinfo
 
 def last_local_info():
+
     '''Get last local push/pull info and return'''
+
     lastpushinfo = ['', ''] 
     lastpullinfo = ['', '']
     lastinfo = []
@@ -168,7 +180,9 @@ def last_local_info():
     return lastinfo
 
 def last_local_push_time():
+
     '''Get last local push time and return'''
+
     lastpushtime=''
     hostname = socket.gethostname()
     with open(LOGFILE) as f:
@@ -195,6 +209,9 @@ def last_remote_push_time():
     return lastpushtime
 
 def latest_remote_file_time():
+
+    ''' return remote file time '''
+
     latestfiletime = ''
     with open(LOGFILE) as f:
         content = f.readlines()
@@ -205,6 +222,9 @@ def latest_remote_file_time():
     return latestfiletime
 
 def latest_local_file():
+
+    ''' return local file time '''
+
     os.chdir(CLOUDDATAPATH)
     gfiles = sorted(glob.glob(str(CLOUDDATAPATH / '**/*'), recursive = True), key=os.path.getmtime)    
     newest = gfiles[-1]
@@ -213,21 +233,33 @@ def latest_local_file():
     return newesttimeandname
 
 def formatted_time(epoch_time):
+
+    ''' return formatted time '''
+
     ftime = datetime.datetime.fromtimestamp(epoch_time).strftime('%Y-%m-%d %H:%M:%S.%f')
     return ftime[:22]
 
 def header(label):
+
+    ''' print header line with label '''
+
     print()
     buffer = f'--- {label} ---'
     buffer = buffer.rjust(80, '-')
     print(buffer.upper())
 
 def check_file_exists(filepath):
+
+    ''' check that file exists and exit if it doesn't '''
+
     if not filepath.is_file():
         print (f'{filepath} doesn\'t exist')
         sys.exit()
 
 def verify_remote_log_exists(accounts):
+
+    ''' create log file if is doesn't exist '''
+
     # create remote sync_log path if doesn't exist
     remote_sync_log_path = accounts[0][0] + ':sync_log'
     if execute_command(f'rclone lsd {remote_sync_log_path}', verbose=False) != 0:
@@ -242,6 +274,9 @@ def verify_remote_log_exists(accounts):
         execute_command(f'rclone move sync_log.txt {remote_sync_log_path}', verbose=False)
 
 def get_remote_file_list(accounts):
+
+    ''' write a list of remote filenames to a file '''
+
     filepath = Path(__file__).parent
     remotelist = []
     filelist = []
@@ -282,6 +317,9 @@ def get_remote_file_list(accounts):
     (filepath / 'combined.txt').unlink()
 
 def get_local_file_list(accounts):
+
+    ''' write a list of local filenames to a file '''
+
     print(f'getting local file list...')
     filepath = Path(__file__).parent
     rootpath = Path.home() / 'Cloud'
@@ -312,6 +350,9 @@ def get_local_file_list(accounts):
         outfile.writelines(new_lines)
 
 def diff_file_lists(accounts):
+
+    ''' diff remote and local file lists '''
+
     header('diff remote & local files')
     get_remote_file_list(accounts)
     get_local_file_list(accounts)
@@ -322,6 +363,9 @@ def diff_file_lists(accounts):
     execute_command(f'diff {rfile} {lfile}', verbose=True)
 
 def execute_command(cmd, verbose=True):
+
+    ''' execute command using subprocess.run '''
+
     if verbose == True:
         print(cmd)
     cmd_list = cmd.split()
@@ -332,6 +376,9 @@ def execute_command(cmd, verbose=True):
     return result.returncode
 
 def usage():
+
+    ''' display usage if arguments not valid '''
+
     print()
     print('usage:')
     print('    cloud status')
