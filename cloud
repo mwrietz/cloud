@@ -25,6 +25,8 @@ def main():
             status(accounts)
         if action == 'status':
             status(accounts)
+        if action == 'diff': 
+            diff_file_lists(accounts)
     else:
         usage()
     print()
@@ -83,7 +85,7 @@ def status(accounts):
 
     header('sync log')
     execute_command(f'rclone sync box:sync_log {LOGFILEPATH}', verbose=True)
-    header('file status')
+    header('log status')
     with open(LOGFILE) as logf:
         content = logf.read().splitlines()
     count = len(content)
@@ -383,9 +385,10 @@ def usage():
 
     print()
     print('usage:')
-    print('    cloud status')
-    print('    cloud push')
-    print('    cloud pull')
+    print('    cloud push    # push local file changes')
+    print('    cloud pull    # pull remote file changes')
+    print('    cloud status  # show log status info')
+    print('    cloud diff    # show file differences between local and remote')
     print()
 
 if __name__ == '__main__':
