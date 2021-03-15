@@ -105,11 +105,13 @@ def status(accounts):
     if latest_local_file_time > latest_remote_file_time():
         print()
         print('push needed...')
+        print()
         if input('diff (y/N)?') == 'y':
             diff_file_lists(accounts)
     if latest_remote_file_time() > latest_local_file_time:
         print()
         print('pull needed...')
+        print()
         if input('diff (y/N)?') == 'y':
             diff_file_lists(accounts)
     print()
