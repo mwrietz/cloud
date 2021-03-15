@@ -83,7 +83,7 @@ def status(accounts):
 
     '''Return sync status and diff remote and local file lists'''
 
-    header('sync log')
+    header('update sync log')
     execute_command(f'rclone sync box:sync_log {LOGFILEPATH}', verbose=True)
     header('log status')
     with open(LOGFILE) as logf:
