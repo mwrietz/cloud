@@ -16,7 +16,7 @@ from pathlib import Path
 
 def main():
     print()
-    print(f'{sys.argv[0]} - version 20210314')
+    print(f'{sys.argv[0]} - version 20210315')
     accounts = initialize()
     if len(sys.argv) == 2:
         action = sys.argv[1]
@@ -103,12 +103,14 @@ def status(accounts):
     if latest_local_file_time > latest_remote_file_time():
         print()
         print('push needed...')
+        if input('diff (y/N)?') == 'y':
+            diff_file_lists(accounts)
     if latest_remote_file_time() > latest_local_file_time:
         print()
         print('pull needed...')
+        if input('diff (y/N)?') == 'y':
+            diff_file_lists(accounts)
     print()
-    if input('diff (y/N)?') == 'y':
-        diff_file_lists(accounts)
 
 def update_log_file(action, date):
 
