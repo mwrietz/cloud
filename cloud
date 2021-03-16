@@ -29,6 +29,7 @@ def main():
             diff_file_lists(accounts)
     else:
         usage()
+    header('complete')
     print()
 
 def initialize():
@@ -114,8 +115,6 @@ def status(accounts):
         print()
         if input('diff (y/N)?') == 'y':
             diff_file_lists(accounts)
-    header('')
-    print()
 
 def update_log_file(action, date):
 
@@ -368,7 +367,6 @@ def diff_file_lists(accounts):
     lfile = filepath / 'locals.txt'
     print()
     execute_command(f'diff {rfile} {lfile}', verbose=True)
-    header('')
 
 def execute_command(cmd, verbose=True):
 
