@@ -16,7 +16,7 @@ from pathlib import Path
 
 def main():
     print()
-    print(f'{sys.argv[0]} - version 20210315')
+    print(f'{sys.argv[0]} - version 20210316')
     accounts = initialize()
     if len(sys.argv) == 2:
         action = sys.argv[1]
@@ -114,6 +114,7 @@ def status(accounts):
         print()
         if input('diff (y/N)?') == 'y':
             diff_file_lists(accounts)
+    header('')
     print()
 
 def update_log_file(action, date):
@@ -367,6 +368,7 @@ def diff_file_lists(accounts):
     lfile = filepath / 'locals.txt'
     print()
     execute_command(f'diff {rfile} {lfile}', verbose=True)
+    header('')
 
 def execute_command(cmd, verbose=True):
 
