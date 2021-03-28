@@ -71,13 +71,14 @@ def perform(action, accounts):
     '''Sync remote accounts with local files, push/pull as appropriate'''
 
     label, local, remote  = 0, 1, 2
-    header(f's y n c  a c c o u n t s : {action}')
+    if action == 'push': 
+        header(f's y n c  a c c o u n t s : p u s h')
+    if action == 'pull':
+        header(f's y n c  a c c o u n t s : p u l l')
     for i in range(len(accounts)):
         if action == 'push':
-            header(f's y n c  a c c o u n t s : p u s h')
             execute_command(f'rclone sync {accounts[i][local]} {accounts[i][remote]}', verbose=True)
         if action == 'pull':
-            header(f's y n c  a c c o u n t s : p u l l')
             execute_command(f'rclone sync {accounts[i][remote]} {accounts[i][local]}', verbose=True)
     date = datetime.datetime.now()
     update_log_file(action, date)
