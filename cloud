@@ -125,11 +125,11 @@ def update_log_file(action, date):
 
     execute_command(f'rclone sync box:sync_log {LOGFILEPATH}', verbose=False)
     with open(LOGFILE, 'a') as logf:
-        actionstring = str(date)[:22] + ' ' + action + ' '
-        actionstring += getpass.getuser() + '@' + socket.gethostname() + ' '
-        newestfilestring = latest_local_file() 
-        logstring = f'{actionstring:55} : {newestfilestring}\n'
-        logf.write(logstring)
+        date_str = str(date)[:22]
+        user_str = getpass.getuser() + '@' + socket.gethostname()
+        file_str = latest_local_file()
+        log_str = f'{date_str:10} {action:4} {user_str:27} : {file_str}\n'
+        logf.write(log_str)
     execute_command(f'rclone sync {LOGFILEPATH} box:sync_log', verbose=False)
 
 def last_remote_info():
