@@ -16,7 +16,7 @@ from pathlib import Path
 
 def main():
     print()
-    print(f'{sys.argv[0]} - version 20210316')
+    print(f'{sys.argv[0]} - version 20210327')
     accounts = initialize()
     if len(sys.argv) == 2:
         action = sys.argv[1]
@@ -29,7 +29,7 @@ def main():
             diff_file_lists(accounts)
     else:
         usage()
-    header('complete')
+    header('c o m p l e t e')
     print()
 
 def initialize():
@@ -71,7 +71,7 @@ def perform(action, accounts):
     '''Sync remote accounts with local files, push/pull as appropriate'''
 
     label, local, remote  = 0, 1, 2
-    header(f'sync accounts : {action}')
+    header(f's y n c  a c c o u n t s : {action}')
     for i in range(len(accounts)):
         if action == 'push':
             execute_command(f'rclone sync {accounts[i][local]} {accounts[i][remote]}', verbose=True)
@@ -84,9 +84,9 @@ def status(accounts):
 
     '''Return sync status and diff remote and local file lists'''
 
-    header('update sync log')
+    header('u p d a t e  s y n c  l o g')
     execute_command(f'rclone sync box:sync_log {LOGFILEPATH}', verbose=True)
-    header('log status')
+    header('l o g  s t a t u s')
     with open(LOGFILE) as logf:
         content = logf.read().splitlines()
     count = len(content)
@@ -359,7 +359,7 @@ def diff_file_lists(accounts):
 
     ''' diff remote and local file lists '''
 
-    header('diff remote & local files')
+    header('d i f f  r e m o t e  &  l o c a l  f i l e s')
     get_remote_file_list(accounts)
     get_local_file_list(accounts)
     filepath = Path(__file__).parent
