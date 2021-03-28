@@ -72,9 +72,9 @@ def perform(action, accounts):
 
     label, local, remote  = 0, 1, 2
     if action == 'push': 
-        header(f's y n c  a c c o u n t s : p u s h')
+        header(f's y n c  a c c o u n t s  :  p u s h')
     if action == 'pull':
-        header(f's y n c  a c c o u n t s : p u l l')
+        header(f's y n c  a c c o u n t s  :  p u l l')
     for i in range(len(accounts)):
         if action == 'push':
             execute_command(f'rclone sync {accounts[i][local]} {accounts[i][remote]}', verbose=True)
