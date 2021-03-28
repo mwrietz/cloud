@@ -205,7 +205,9 @@ def last_local_push_time():
     return lastpushtime
     
 def last_remote_push_time():
+
     '''Open log file, find and return last push time'''
+
     lastpushtime=''
     with open(LOGFILE) as f:
         content = f.readlines()
